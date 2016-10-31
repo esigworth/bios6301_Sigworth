@@ -1,0 +1,185 @@
+---
+title: 'BIOS6301: Assignment 3'
+author: "Elizabeth Sigworth"
+date: "due October 10, 2016"
+output: pdf_document
+---
+
+**Grade: 48/50**
+
+*Due Tuesday, 11 October, 1:00 PM*
+
+50 points total.
+
+$5^{n=day}$ points taken off for each day late.
+
+This assigment includes turning in the first two assignments. All three should
+include knitr files (named `homework1.rmd`, `homework2.rmd`, `homework3.rmd`)
+along with valid PDF output files. Inside each file, clearly indicate which
+parts of your responses go with which problems (you may use the original homework
+document as a template). Add your name as `author` to the file's metadata section.
+Raw R code/output or word processor files are not acceptable.
+
+Failure to properly name files or include author name may result in 5 points taken off.
+
+### Question 1 ###
+
+**10 points**
+
+1. Use GitHub to turn in the first three homework assignments. Make sure the teacher (couthcommander) and TA (trippcm) are collaborators. (5 points)
+
+1. Commit each assignment individually.  This means your repository should have at least three commits. (5 points)
+
+### Question 2 ###
+
+**15 points**
+
+Write a simulation to calculate the power for the following study
+design.  The study has two variables, treatment group and outcome.
+There are two treatment groups (0, 1) and they should be assigned
+randomly with equal probability.  The outcome should be a random normal
+variable with a mean of 60 and standard deviation of 20.  If a patient
+is in the treatment group, add 5 to the outcome.  5 is the true
+treatment effect.  Create a linear model for the outcome by the
+treatment group, and extract the p-value (hint: see assigment1).
+Test if the p-value is less than or equal to the alpha level, which
+should be set to 0.05.
+
+Repeat this procedure 1000 times. The power is calculated by finding
+the percentage of times the p-value is less than or equal to the alpha
+level.  Use the `set.seed` command so that the professor can reproduce
+your results.
+
+
+1. Find the power when the sample size is 100 patients. (10 points)
+
+```{r}
+set.seed(872)
+n <-100 ##Set number of patients
+pvalues.1 <- NULL
+for (i in 1:1000) {
+  simul <- data.frame(Treatment=rbinom(100,1,.5))
+  simul$Outcome <- rnorm(100,60,20)
+  for (j in 1:n) {
+    if (simul$Treatment[j]==1) {
+      simul$Outcome[j] <- simul$Outcome[j] + 5
+    }
+  }
+  mod <- lm(simul$Outcome~simul$Treatment)
+  p.val <- coef(summary(mod))[2,4]
+  pvalues.1 <- c(pvalues.1,p.val <=0.05)
+}
+power.1 <- mean(pvalues.1)
+power.1
+
+```
+
+2. Find the power when the sample size is 1000 patients. (5 points)
+
+```{r}
+n <- 1000
+set.seed(5424)
+pvalues.2 <- NULL
+for (i in 1:1000) {
+  simul <- data.frame(Treatment=rbinom(1000,1,.5))
+  simul$Outcome <- rnorm(1000,60,20)
+  for (j in 1:n) {
+    if (simul$Treatment[j]==1) {
+      simul$Outcome[j] <- simul$Outcome[j] + 5
+    }
+  }
+  mod <- lm(simul$Outcome~simul$Treatment)
+  p.val <- coef(summary(mod))[2,4]
+  pvalues.2 <- c(pvalues.2,p.val <=0.05)
+}
+power.2 <- mean(pvalues.2)
+power.2
+```
+
+When the sample size is 100 patients, the power of the study is 22.8%, but when the sample size is 1000 patients, the power of the study is 97%.
+
+### Question 3 ###
+
+**15 points**
+
+Obtain a copy of the [football-values lecture](https://github.com/couthcommander/football-values).
+Save the `2015/proj_rb15.csv` file in your working directory.  Read
+in the data set and remove the first two columns.
+
+```{r}
+#proj_rb15 <- read.csv("/var/folders/kp/zlsf12h14y92__lp668ljv2m0000gn/T//RtmpKa1QwJ/data2c845e674976", stringsAsFactors=FALSE)
+proj_rb15 <- read.csv("proj_wr16.csv")
+proj_rb15 <- proj_rb15[,3:ncol(proj_rb15)]
+```
+
+1. Show the correlation matrix of this data set. (3 points)
+
+```{r}
+cor(proj_rb15)
+```
+
+
+2. Generate a data set with 30 rows that has a similar correlation
+structure.  Repeat the procedure 10,000 times and return the mean
+correlation matrix. (10 points)
+
+```{r}
+library(MASS)
+rho.proj <- cor(proj_rb15)
+vcov.proj <- var(proj_rb15) 
+means.proj <- colMeans(proj_rb15)
+  
+average.cor <- 0
+for(i in 1:10000) {
+  proj.sim <- mvrnorm(30, mu=means.proj, Sigma=vcov.proj)
+  rho.sim <- cor(proj.sim)
+  average.cor <- average.cor + rho.sim/10000
+}
+average.cor # similar correlation in the mean correlation matrix
+cor(proj_rb15) # original correlation matrix
+```
+
+
+3. Generate a data set with 30 rows that has the exact correlation
+structure as the original data set. (2 points)
+
+```{r}
+exact.avg.cor <- 0
+for(i in 1:10000) {
+  proj.sim <- mvrnorm(30, mu=means.proj, Sigma=vcov.proj, empirical=TRUE)
+  rho.sim <- cor(proj.sim)
+  exact.avg.cor <- exact.avg.cor + rho.sim/10000
+}
+exact.avg.cor # exact correlation structure as original
+cor(proj_rb15) # original correlation
+```
+
+
+**JC Grading -2**
+Only looking for a single generated dataset.
+
+### Question 4 ###
+
+**10 points**
+
+Use \LaTeX to create the following expressions.
+
+1. Hint: `\Rightarrow` (4 points)
+    
+    \begin{eqnarray*}
+    P(B) &=& \sum\limits_{j} P(B|A_j)P(A_j), \\
+    &\Rightarrow& P(A_i|B) = \frac{P(B|A_i)P(A_i)}{\sum_j(B|A_j)P(A_j)}
+    \end{eqnarray*}
+
+2. Hint: `\zeta` (3 points)
+
+    $\hat{f}(\zeta) = \int_{-\infty}^{\infty} f(x)e^{-2\pi i x \zeta}dx$
+   
+3. Hint: `\partial` (3 points)
+
+    $\mathbf{J} = \frac{d\mathbf{f}}{d\mathbf{x}} = \left[\frac{\partial \mathbf{f}}{\partial x_1} \dots \frac{\partial \mathbf{f}}{\partial x_n} \right] = 
+    \begin{bmatrix}
+					\frac{\partial f_1}{\partial x_1} & \dots  & \frac{\partial f_1}{\partial x_n} \\
+    			\vdots                            & \ddots & \vdots  \\
+   				\frac{\partial f_m}{\partial x_1} & \dots  & \frac{\partial f_m}{\partial x_n}
+		\end{bmatrix}$
