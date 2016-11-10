@@ -112,7 +112,6 @@ for(i in 1:nrow(haart_merged)){
       drugs <- c(drugs,haart_merged[i,j])
     }
   }
-  
   haart_merged$regimen[i] <- paste(drugs, collapse = "-")
 }
 table(haart_merged$regimen)[which(table(haart_merged$regimen) > 100)]
@@ -373,7 +372,7 @@ Now imagine running the above several times, but with a different response and d
 ```{r}
 myfun <- function(dat, response) {
   form <- as.formula(response ~ .)
-  coef(summary(glm(form, data=dat, family=binomial(logit))))
+  coef(summary(glm(response ~ ., data=dat, family=binomial(logit))))
 }
 ```
 
@@ -385,7 +384,7 @@ tryCatch(myfun(haart_df, death), error = function(e) e)
 
 What do you think is going on?  Consider using `debug` to trace the problem.
 
-The function is failing because it cannot find the object 'death' in the function call. This occurs in the third line when we find the coefficients of the summary of the glm of death ~ . using `haart_df`. This is happening because the object "death" is defined inside of the data set `haart_df`, but we are trying to call the variable from outside of the data set itself. One way to fix this would be to call `haart_df$death` instead.
+The function is failing because it cannot find the object 'death' in the function call. This occurs in the third line when we find the coefficients of the summary of the glm of death ~ . using `haart_df`. This is happening because the object "death" is defined inside of the data set `haart_df`, but we are trying to call the variable from outside of the data set itself. However, trying to call `haart_df$death` results in the model not properly using death as the outcome variable. 
 
 ```{r}
 myfun(haart_df, haart_df$death)
@@ -396,11 +395,15 @@ myfun(haart_df, haart_df$death)
 Create a working function.
 
 ```{r}
+#We will use deparse(substitute(x)) to convert the inputs into strings, create the formula manually, and input this into the model function
+
 myfun.2 <- function(dat, response) {
-  attach(dat, warn.conflicts = FALSE)
-  form <- as.formula(response ~ .)
-  print(coef(summary(glm(form, data=dat, family=binomial(logit)))))
-  detach(dat)
+  c <- deparse(substitute(response))
+  d <- deparse(substitute(dat))
+  e <- paste(d,c,sep="$")
+  f <- paste(e, " ~ .",sep="")
+  print(f)
+  print(coef(summary(glm(f, data=dat, family=binomial(logit)))))
 }
 
 myfun.2(haart_df,death)
