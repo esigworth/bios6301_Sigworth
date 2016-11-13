@@ -42,21 +42,26 @@ for (i in 1:nrow(haart)) {
   haart$one.year[i] <- ifelse(abs(unclass(difftime(haart$init.date[i], 
                                           haart$date.death[i], units='days'))[1]) > 365, 0, 1)
 }
-sum(haart$one.year,na.rm = TRUE)
+year.one <- sum(haart$one.year,na.rm = TRUE)
 ```
 
-In this data, 92 observations died in year 1. 
+In this data, `r year.one` observations died in year 1. 
 
 3. Use the `init.date`, `last.visit` and `death.date` columns to calculate a followup time (in days), which is the difference between the first and either the last visit or a death event (whichever comes first). If these times are longer than 1 year, censor them (this means if the value is above 365, set followup to 365).  Print the quantile for this new variable.
 
 ```{r}
 for (i in 1:nrow(haart)){
-  if(is.na(haart$date.death[i]) == TRUE) {
+  if(is.na(haart$date.death[i]) == TRUE ) {
     difference <- unclass(difftime(haart$last.visit[i], haart$init.date[i], 'days'))[1]
     haart$follow.up[i] <- min(365,difference)
   }
-  else {
+  else if(is.na(haart$date.death[i]) == FALSE && is.na(haart$last.visit[i])==TRUE){
     difference <- unclass(difftime(haart$date.death[i], haart$init.date[i], 'days'))[1]
+    haart$follow.up[i] <- min(365,difference)
+  }
+  else {
+    first <- min(haart$last.visit[i],haart$date.death[i])
+    difference <- unclass(difftime(first, haart$init.date[i], 'days'))[1]
     haart$follow.up[i] <- min(365,difference)
   }
 }
@@ -67,18 +72,17 @@ quantile(haart$follow.up)
 
 ```{r}
 for (i in 1:nrow(haart)){
-  if(is.na(haart$date.death[i]) && unclass(difftime(haart$last.visit[i], 
-                                                    haart$init.date[i], 'days'))[1] < 365){
+  if(is.na(haart$date.death[i]) && haart$follow.up[i] < 365){
     haart$lost[i] <- 1
   }
   else {
     haart$lost[i] <- 0
   }
 }
-sum(haart$lost, na.rm=TRUE)
+lost.to <- sum(haart$lost, na.rm=TRUE)
 ```
 
-There were 173 records lost-to-followup. 
+There were `r lost.to` records lost-to-followup. 
 
 5. Recall our work in class, which separated the `init.reg` field into a set of indicator variables, one for each unique drug. Create these fields and append them to the database as new columns.  Which drug regimen are found over 100 times?
 
@@ -115,9 +119,10 @@ for(i in 1:nrow(haart_merged)){
   haart_merged$regimen[i] <- paste(drugs, collapse = "-")
 }
 table(haart_merged$regimen)[which(table(haart_merged$regimen) > 100)]
+apply(X = haart_merged[,17:34],2,table)
 ```
 
-The drug regimens 3TC-AZT-NVP and 3TC-AZT-EFV are both found over 100 times. 
+The individual drugs 3TC, AZT, EFV, NVP, and D4T are each found over 100 times, while the combined drug regimens 3TC-AZT-NVP and 3TC-AZT-EFV are both found over 100 times. 
 
 6. The dataset `haart2.csv` contains a few additional observations for the same study. Import these and append them to your master dataset (if you were smart about how you coded the previous steps, cleaning the additional observations should be easy!).  Show the first five records and the last five records of the complete (and clean) data set.
 
