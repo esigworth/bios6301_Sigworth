@@ -108,21 +108,11 @@ for (i in 17:34){
     }
   }
 }
-haart_merged$regimen <- NA
-for(i in 1:nrow(haart_merged)){
-  drugs <- vector()
-  for(j in 17:34){
-    if(is.na(haart_merged[i,j]) == FALSE){
-      drugs <- c(drugs,haart_merged[i,j])
-    }
-  }
-  haart_merged$regimen[i] <- paste(drugs, collapse = "-")
-}
-table(haart_merged$regimen)[which(table(haart_merged$regimen) > 100)]
+
 apply(X = haart_merged[,17:34],2,table)
 ```
 
-The individual drugs 3TC, AZT, EFV, NVP, and D4T are each found over 100 times, while the combined drug regimens 3TC-AZT-NVP and 3TC-AZT-EFV are both found over 100 times. 
+The individual drugs 3TC, AZT, EFV, NVP, and D4T are each found over 100 times. 
 
 6. The dataset `haart2.csv` contains a few additional observations for the same study. Import these and append them to your master dataset (if you were smart about how you coded the previous steps, cleaning the additional observations should be easy!).  Show the first five records and the last five records of the complete (and clean) data set.
 
@@ -177,17 +167,7 @@ for (i in 17:34){
     }
   }
 }
-haart2_merged$regimen <- NA
-for(i in 1:nrow(haart2_merged)){
-  drugs <- vector()
-  for(j in 17:34){
-    if(is.na(haart2_merged[i,j]) == FALSE){
-      drugs <- c(drugs,haart2_merged[i,j])
-    }
-  }
-  
-  haart2_merged$regimen[i] <- paste(drugs, collapse = "-")
-}
+
 
 haart_final <- rbind(haart_merged,haart2_merged)
 haart_final[c(1:5,1000:1004),]
