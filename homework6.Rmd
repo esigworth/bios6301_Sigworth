@@ -103,7 +103,7 @@ bootstrap.mean <- function(data,n){
   means.0 <- vector()
   means.1 <- vector()
   for(i in 1:1000){
-    test.sample <- data[sample(nrow(data),250,replace=TRUE),]
+    test.sample <- data[sample(nrow(data),n,replace=TRUE),]
     means <- aggregate(test.sample[,2],list(test.sample$Treatment),mean)
     means.0[i] <- means[1,2]
     means.1[i] <- means[2,2]
@@ -209,7 +209,7 @@ plot.medicalRecord <- function(x){
   plot(x=chart$doa,y=chart$Temperature,main="Temperature by Admission",
        xlab="Date of Admission",ylab="Temperature",type="l",lwd=2,col="green")
   plot(x=chart$doa,y=chart$Fluids,main="Fluid Intake by Admission",
-       xlab="Date of Admission",ylab="Temperature",type="l",lwd=2,col="purple")
+       xlab="Date of Admission",ylab="Fluid Intake",type="l",lwd=2,col="purple")
 }
 
 mean(record)
